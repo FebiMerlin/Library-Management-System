@@ -22,6 +22,10 @@ add_executable(lms_tests
     test_storage.cpp
     test_students.cpp)
 target_link_libraries(lms_tests PRIVATE lms_core GTest::gtest_main)
+# GoogleTest headers are third-party code: treat them as system headers so
+# our strict warning set (and -Werror) applies to our tests only.
+get_target_property(_gtest_includes gtest INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(lms_tests SYSTEM PRIVATE ${_gtest_includes})
 lms_set_warnings(lms_tests)
 
 include(GoogleTest)

@@ -10,7 +10,9 @@ function(lms_set_warnings target)
         target_compile_options(${target} PRIVATE
             -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion
             -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused
-            -Woverloaded-virtual -Wnull-dereference -Wdouble-promotion)
+            -Woverloaded-virtual -Wdouble-promotion)
+        # -Wnull-dereference is deliberately left out: GCC 12-14 report false
+        # positives inside libstdc++ (std::string/vector) at -O2 and above.
         if(LMS_WARNINGS_AS_ERRORS)
             target_compile_options(${target} PRIVATE -Werror)
         endif()
