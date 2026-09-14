@@ -1,7 +1,7 @@
 #include "lms/date.h"
 
 #include <chrono>
-#include <cstdio>
+#include <string>
 
 namespace lms {
 
@@ -27,9 +27,14 @@ std::string formatDay(Day day) {
     const long long m = mp < 10 ? mp + 3 : mp - 9;
     const long long year = y + (m <= 2 ? 1 : 0);
 
-    char buf[16];
-    std::snprintf(buf, sizeof(buf), "%04lld-%02lld-%02lld", year, m, d);
-    return buf;
+    // Manual zero padding instead of snprintf: GCC's -Wformat-truncation
+    // cannot prove the bound and warns about the buffer size.
+    auto pad = [](long long value, int width) {
+        std::string s = std::to_string(value < 0 ? -value : value);
+        while (static_cast<int>(s.size()) < width) s.insert(s.begin(), '0');
+        return value < 0 ? "-" + s : s;
+    };
+    return pad(year, 4) + "-" + pad(m, 2) + "-" + pad(d, 2);
 }
 
 bool parseDay(const std::string& text, Day& out) {
