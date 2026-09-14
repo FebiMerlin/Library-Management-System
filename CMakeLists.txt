@@ -21,6 +21,11 @@ endif()
 
 include(cmake/Warnings.cmake)
 
+if(MSVC)
+    # std::getenv & co. are standard; silence MSVC's C4996 "unsafe" deprecation.
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+endif()
+
 if(MINGW)
     # Self-contained executables: a MinGW binary that links the C++ runtime
     # dynamically picks up whichever libstdc++-6.dll comes first in PATH
