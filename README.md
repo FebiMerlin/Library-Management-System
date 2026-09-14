@@ -39,7 +39,7 @@ cmake --build --preset release
 
 Тесты выполняются **в процессе сборки**: упавший тест — упавшая сборка. Отключить: `cmake --preset release -DLMS_RUN_TESTS_ON_BUILD=OFF`; не собирать тесты вовсе: `-DLMS_BUILD_TESTS=OFF`.
 
-Другие presets: `debug`, `ci` (предупреждения = ошибки), `msvc` (Visual Studio 2022). Без presets:
+Другие presets: `debug`, `ci` (предупреждения = ошибки), `msvc` (генератор Visual Studio; с multi-config-генераторами прогон тестов внутри сборки ненадёжен — после `cmake --build --preset msvc` запускайте `ctest --preset msvc`; в CI на Windows используется Ninja + MSVC). Без presets:
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
