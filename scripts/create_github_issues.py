@@ -93,7 +93,7 @@ def main():
             continue
         roles = [r.strip() for r in t["role"].split(",")]
         labels = [f"role:{r}" for r in roles]
-        assignees = [logins[r] for r in roles if r in logins]
+        assignees = sorted({logins[r] for r in roles if r in logins})  # GitHub rejects duplicates
         body = (
             f"**Роль:** {t['role']}\n"
             f"**Начало:** {t['start']}  **Срок:** {t['due']}  **Оценка:** {t['estimate_hours']} ч\n"
