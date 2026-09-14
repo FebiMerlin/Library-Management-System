@@ -21,6 +21,13 @@ endif()
 
 include(cmake/Warnings.cmake)
 
+if(MINGW)
+    # Self-contained executables: a MinGW binary that links the C++ runtime
+    # dynamically picks up whichever libstdc++-6.dll comes first in PATH
+    # (Git for Windows ships an incompatible one) and crashes at startup.
+    add_link_options(-static)
+endif()
+
 # ------------------------------------------------------------ version.h
 configure_file(cmake/version.h.in "${CMAKE_BINARY_DIR}/generated/lms/version.h" @ONLY)
 
