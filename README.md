@@ -14,7 +14,7 @@
 | Инженер DevOps | Хамидуллин |
 | Разработчик (Dev) | Шарыгин |
 
-Трекер задач — [GitHub Projects](https://github.com/FebiMerlin/Library-Management-System/projects) этого репозитория; CI — GitHub Actions.
+Трекер задач — доска [LMS в GitHub Projects](https://github.com/users/FebiMerlin/projects/3) (задачи — [Issues](https://github.com/FebiMerlin/Library-Management-System/issues)); CI — [GitHub Actions](https://github.com/FebiMerlin/Library-Management-System/actions).
 
 ## Происхождение
 
