@@ -1,0 +1,25 @@
+# Build output
+build/
+build-*/
+out/
+cmake-build-*/
+
+# IDE / editor
+.vs/
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+*.swp
+
+# Local CMake presets (machine-specific paths)
+CMakeUserPresets.json
+
+# Runtime data
+*.dat
+*.dat.tmp
+
+# OS
+.DS_Store
+Thumbs.db

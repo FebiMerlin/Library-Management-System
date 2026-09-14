@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug lms",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": ["--data", "${workspaceFolder}/build/debug.dat"],
+      "cwd": "${workspaceFolder}",
+      "environment": [{ "name": "LMS_ADMIN_PASSWORD", "value": "admin" }],
+      "externalConsole": true,
+      "MIMode": "gdb"
+    }
+  ]
+}

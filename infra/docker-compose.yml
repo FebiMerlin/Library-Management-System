@@ -1,0 +1,106 @@
+# Инфраструктура проекта для размещения на ресурсах кафедры.
+# Профили: tracker (Vikunja), git (Gitea), ci (act_runner для Gitea Actions), ide (code-server).
+#
+#   cp .env.example .env && edit .env
+#   docker compose --profile tracker up -d                  # только трекер
+#   docker compose --profile tracker --profile git --profile ci up -d
+#
+# Подробности: infra/README.md
+
+services:
+  # ---------------------------------------------------------------- tracker
+  vikunja-db:
+    image: postgres:16-alpine
+    profiles: [tracker]
+    environment:
+      POSTGRES_DB: vikunja
+      POSTGRES_USER: vikunja
+      POSTGRES_PASSWORD: ${VIKUNJA_DB_PASSWORD:?set VIKUNJA_DB_PASSWORD in .env}
+    volumes:
+      - vikunja-db:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  vikunja:
+    image: vikunja/vikunja:0.24.6
+    profiles: [tracker]
+    depends_on: [vikunja-db]
+    environment:
+      VIKUNJA_SERVICE_PUBLICURL: ${VIKUNJA_URL:-http://localhost:3456}
+      VIKUNJA_SERVICE_JWTSECRET: ${VIKUNJA_JWT_SECRET:?set VIKUNJA_JWT_SECRET in .env}
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: "false"   # users are created by DevOps
+      VIKUNJA_DATABASE_TYPE: postgres
+      VIKUNJA_DATABASE_HOST: vikunja-db
+      VIKUNJA_DATABASE_DATABASE: vikunja
+      VIKUNJA_DATABASE_USER: vikunja
+      VIKUNJA_DATABASE_PASSWORD: ${VIKUNJA_DB_PASSWORD}
+    ports:
+      - "${VIKUNJA_PORT:-3456}:3456"
+    volumes:
+      - vikunja-files:/app/vikunja/files
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------- git
+  gitea:
+    image: gitea/gitea:1.22
+    profiles: [git, ci]
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      GITEA__server__ROOT_URL: ${GITEA_URL:-http://localhost:3000}/
+      GITEA__server__SSH_PORT: "${GITEA_SSH_PORT:-2222}"
+      GITEA__service__DISABLE_REGISTRATION: "true"
+      GITEA__actions__ENABLED: "true"
+    ports:
+      - "${GITEA_PORT:-3000}:3000"
+      - "${GITEA_SSH_PORT:-2222}:22"
+    volumes:
+      - gitea-data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------- ci
+  # Runs the same .github/workflows/ci.yml (Gitea Actions is compatible).
+  # Register once (see infra/README.md).
+  act-runner:
+    image: gitea/act_runner:0.2.11
+    profiles: [ci]
+    depends_on: [gitea]
+    environment:
+      CONFIG_FILE: /config.yaml
+      GITEA_INSTANCE_URL: http://gitea:3000
+      GITEA_RUNNER_NAME: lms-runner
+    volumes:
+      - ./act-runner-config.yaml:/config.yaml:ro
+      - act-runner-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  # Build image used by the runner: Ubuntu 24.04 + GCC + Clang + CMake + Ninja.
+  lms-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: lms-builder:latest
+    profiles: [ci]
+    command: ["true"]
+
+  # -------------------------------------------------------------------- ide
+  code-server:
+    image: codercom/code-server:4.93.1
+    profiles: [ide]
+    environment:
+      PASSWORD: ${CODE_SERVER_PASSWORD:?set CODE_SERVER_PASSWORD in .env}
+    ports:
+      - "${CODE_SERVER_PORT:-8080}:8080"
+    volumes:
+      - code-server-data:/home/coder
+      - ../:/home/coder/project
+    restart: unless-stopped
+
+volumes:
+  vikunja-db:
+  vikunja-files:
+  gitea-data:
+  act-runner-data:
+  code-server-data:
