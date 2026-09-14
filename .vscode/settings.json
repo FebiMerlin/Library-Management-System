@@ -1,0 +1,8 @@
+{
+  "cmake.configureOnOpen": true,
+  "cmake.useCMakePresets": "always",
+  "editor.formatOnSave": true,
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/compile_commands.json",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true
+}
