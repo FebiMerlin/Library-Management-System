@@ -10,9 +10,9 @@
 
 | Роль | Участник |
 |---|---|
-| Менеджер проекта (PM) | Шарыгин |
-| Инженер DevOps | Хребитщев |
-| Разработчик (Dev) | Хамидуллин |
+| Менеджер проекта (PM) | Хребтищев |
+| Инженер DevOps | Хамидуллин |
+| Разработчик (Dev) | Шарыгин |
 
 Трекер задач — [GitHub Projects](https://github.com/FebiMerlin/Library-Management-System/projects) этого репозитория; CI — GitHub Actions.
 
