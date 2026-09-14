@@ -1,10 +1,20 @@
 # Library Management System
 
-[![CI](https://github.com/OWNER/Library-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/Library-Management-System/actions/workflows/ci.yml)
+[![CI](https://github.com/FebiMerlin/Library-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/FebiMerlin/Library-Management-System/actions/workflows/ci.yml)
 
 Консольная система учёта библиотеки на C++17: книги, счета студентов, выдача и возврат книг со штрафами за просрочку, поиск, история операций, хранение данных в файле.
 
 Учебный проект по практической работе №1: взят «маленький некачественный проект с GitHub», проведена ревизия, добавлены сборка CMake, тесты, CI и пять новых функций. Документация по работе — в каталоге [`docs/`](docs/).
+
+## Команда
+
+| Роль | Участник |
+|---|---|
+| Менеджер проекта (PM) | Шарыгин |
+| Инженер DevOps | Хребитщев |
+| Разработчик (Dev) | Хамидуллин |
+
+Трекер задач — [GitHub Projects](https://github.com/FebiMerlin/Library-Management-System/projects) этого репозитория; CI — GitHub Actions.
 
 ## Происхождение
 
@@ -105,7 +115,7 @@ src/cli/         консольный интерфейс (исполняемый
 tests/           GoogleTest + сквозные CTest-скрипты
 cmake/           вспомогательные модули CMake
 docs/            ТЗ, журнал ревизии, план, регламент, тесты, фичи, сценарий сдачи
-infra/           docker-compose для трекера / Gitea / CI-раннера / IDE на ресурсах кафедры
+infra/           docker-compose для трекера / Gitea / CI-раннера / IDE, если кафедра выделит сервер
 scripts/         импорт задач плана в GitHub Issues
 .github/         CI (GitHub Actions)
 ```
