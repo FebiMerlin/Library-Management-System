@@ -1,8 +1,8 @@
 # План работ и задачи трекера
 
-Роли: **PM** — менеджер проекта, **DevOps** — инженер DevOps, **Dev** — разработчик. Даты — 2026 год. Оценки в часах. Колонки канбана: `Backlog → To do → In progress → Review → Done`.
+Роли: **PM** — менеджер проекта (Шарыгин), **DevOps** — инженер DevOps (Хребитщев), **Dev** — разработчик (Хамидуллин). Трекер — GitHub Projects репозитория. Даты — 2026 год. Оценки в часах. Колонки канбана: `Backlog → To do → In progress → Review → Done`.
 
-Тот же список в машиночитаемом виде — `docs/tracker_tasks.csv` (импорт в трекер: `scripts/create_github_issues.py` для GitHub Issues; для Vikunja — вручную или через API).
+Тот же список в машиночитаемом виде — `docs/tracker_tasks.csv`; в GitHub Issues он импортируется скриптом `scripts/create_github_issues.py`, дальше задачи добавляются в GitHub Project (поле Progress, доска Kanban).
 
 ## Вехи
 

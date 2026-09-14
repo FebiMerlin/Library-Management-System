@@ -19,7 +19,9 @@
 | Trello | нет | да | да | облако | простой | нет процентов, нет self-hosted |
 
 ### Выбор
-**Основной — Vikunja** (self-hosted на ресурсах кафедры, `infra/docker-compose.yml`): единственный лёгкий вариант, где процент выполнения — штатное поле задачи, а не костыль. **Резервный — GitHub Projects** (если кафедра не выделяет сервер): задачи заводятся как Issues, % — кастомное поле «Progress», канбан — представление Board с колонками Backlog / To do / In progress / Review / Done. Скрипт `scripts/create_github_issues.py` переносит задачи из `docs/tracker_tasks.csv` в Issues автоматически.
+**Основной — GitHub Projects + Issues** в репозитории проекта: задачи заводятся как Issues (исполнитель, метка роли, срок в теле и в поле Project «Due»), процент выполнения — кастомное поле «Progress» (Number), канбан — представление Board с колонками Backlog / To do / In progress / Review / Done. PR закрывают задачи автоматически (`Closes #N`), ноль администрирования, Заказчик видит доску без регистрации. Скрипт `scripts/create_github_issues.py` переносит задачи из `docs/tracker_tasks.csv` в Issues автоматически.
+
+**Альтернатива, если Заказчик требует размещения на ресурсах кафедры — Vikunja** (self-hosted, `infra/docker-compose.yml`): единственный лёгкий вариант, где процент выполнения — штатное поле задачи. Развёртывание описано в `infra/README.md`; переезд задач — вручную по `docs/tracker_tasks.csv` (40 задач, ~1 ч).
 
 ### Ресурсы, сроки, работы (для согласования с DevOps и кафедрой)
 * **Ресурсы:** виртуальная машина или контейнерный хост кафедры: 1 vCPU, 1 ГБ RAM, 5 ГБ диска, Docker ≥ 24, доступ по HTTP(S) из сети университета. Достаточно даже Raspberry Pi.
@@ -37,7 +39,7 @@
 
 **Выбор:** GitHub как основной (форк `abdulsamie10/Library-Management-System`), **Gitea как зеркало** на ресурсах кафедры (тот же `infra/docker-compose.yml`, профиль `git`), если Заказчик требует размещения на кафедре. Зеркалирование — `git push --mirror` из CI или встроенная функция Gitea «Mirror».
 
-Ветки: `main` (защищённая, только через PR), `feature/<задача>`, `fix/<задача>`. Подробнее — `docs/REGULATIONS.md`.
+Ветки: `master` (защищённая, только через PR), `feature/<задача>`, `fix/<задача>`. Подробнее — `docs/REGULATIONS.md`.
 
 ## 3. Сборочная инфраструктура (CI)
 
@@ -57,7 +59,7 @@
 * **ОС сборочного хоста:** Ubuntu Server 24.04 LTS (поддержка до 2029, GCC 13 и CMake 3.28 в репозиториях, Docker из официального репозитория).
 * **Состав:** Docker 24+, Gitea 1.22, act_runner 0.2, образ `lms-builder` (см. Dockerfile), Vikunja 0.24, PostgreSQL 16.
 * **Ресурсы:** 2 vCPU, 4 ГБ RAM, 20 ГБ диска (сборка GoogleTest + проекта ≈ 1 мин на 2 ядрах).
-* **Работы DevOps:** установка Docker, `docker compose --profile git --profile ci up -d`, регистрация раннера, защита ветки `main`, настройка зеркала.
+* **Работы DevOps:** установка Docker, `docker compose --profile git --profile ci up -d`, регистрация раннера, защита ветки `master`, настройка зеркала.
 * **Срок:** 1–2 рабочих дня.
 
 ## 4. IDE и инструменты разработчика
@@ -77,7 +79,7 @@
 
 | Компонент | Выбор | Размещение | Ресурсы кафедры | Срок |
 |---|---|---|---|---|
-| Трекер | Vikunja (резерв: GitHub Projects) | Docker на сервере кафедры | 1 vCPU / 1 ГБ / 5 ГБ | 1 день |
+| Трекер | GitHub Projects (по требованию: Vikunja) | GitHub (Vikunja — Docker на сервере кафедры) | 0 (Vikunja: 1 vCPU / 1 ГБ / 5 ГБ) | 1 ч (Vikunja: 1 день) |
 | Git | GitHub (форк) + зеркало Gitea | GitHub + сервер кафедры | входит в тот же хост | 0.5 дня |
 | CI | GitHub Actions + Gitea act_runner | GitHub + сервер кафедры | 2 vCPU / 4 ГБ / 20 ГБ (общий хост) | 1–2 дня |
 | IDE | VS Code (конфиг в репо); code-server по требованию | локально / сервер кафедры | 1 vCPU / 2 ГБ на пользователя | 0.5 дня |
