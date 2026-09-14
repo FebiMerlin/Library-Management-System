@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu / GCC
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+          - name: Ubuntu / Clang
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+          - name: Windows / MSVC
+            os: windows-latest
+          - name: macOS / AppleClang
+            os: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja (Linux/macOS)
+        if: runner.os != 'Windows'
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Configure (Ninja)
+        if: runner.os != 'Windows'
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: cmake --preset ci
+
+      - name: Configure (MSVC)
+        if: runner.os == 'Windows'
+        run: cmake --preset msvc -DLMS_WARNINGS_AS_ERRORS=ON
+
+      # Tests run as part of the build (target run_tests); a failing test
+      # fails the build.
+      - name: Build + tests
+        if: runner.os != 'Windows'
+        run: cmake --build --preset ci
+
+      - name: Build + tests (MSVC)
+        if: runner.os == 'Windows'
+        run: cmake --build --preset msvc
+
+      - name: Test report
+        if: runner.os != 'Windows'
+        run: ctest --preset ci
+
+      - name: Test report (MSVC)
+        if: runner.os == 'Windows'
+        run: ctest --preset msvc
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: lms-${{ runner.os }}
+          path: |
+            build/ci/lms
+            build/msvc/Release/lms.exe
+          if-no-files-found: ignore
+
+  format:
+    name: clang-format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check formatting
+        # Same pinned version as docs/REGULATIONS.md so results match locally.
+        run: |
+          pip install clang-format==23.1.1
+          clang-format --version
+          find include src tests -name '*.cpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
