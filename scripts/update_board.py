@@ -35,7 +35,7 @@ DEFAULT_OPEN = {
 }
 
 
-def call(url, token, method="GET", data=None):
+def call(url, token, method="GET", data=None, fatal=True):
     body = json.dumps(data).encode() if data is not None else None
     # GitHub throttles bursts of mutations (secondary rate limit, HTTP 403/429)
     # and occasionally returns 5xx; retry with growing pauses before giving up.
@@ -54,6 +54,9 @@ def call(url, token, method="GET", data=None):
                 print(f"  {e.code} from GitHub, retrying in {wait}s ...")
                 time.sleep(wait)
                 continue
+            if not fatal:
+                print(f"  warning: {method} {url} -> {e.code} (skipped)")
+                return None
             sys.exit(f"{method} {url} -> {e.code}: {text}")
         except urllib.error.URLError as e:
             if attempt < 5:
@@ -160,8 +163,12 @@ def main():
         graphql(UPDATE_MUTATION, token, project=project, item=it["id"], field=progress["id"],
                 value={"number": pct})
         if st == "Done":
-            call(f"{API}/repos/{c['repository']['nameWithOwner']}/issues/{c['number']}", token, "PATCH",
-                 {"state": "closed", "state_reason": "completed"})
+            # The project's built-in workflow may close the issue itself as soon
+            # as Status becomes Done; do not fight it.
+            issue_url = f"{API}/repos/{c['repository']['nameWithOwner']}/issues/{c['number']}"
+            time.sleep(1)
+            if call(issue_url, token)["state"] != "closed":
+                call(issue_url, token, "PATCH", {"state": "closed", "state_reason": "completed"}, fatal=False)
             done_count += 1
         time.sleep(1.5)  # stay under the secondary rate limit
 
