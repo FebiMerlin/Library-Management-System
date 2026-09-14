@@ -29,40 +29,29 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install Ninja (Linux/macOS)
-        if: runner.os != 'Windows'
+      - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
 
-      - name: Configure (Ninja)
-        if: runner.os != 'Windows'
+      # Puts cl.exe on PATH so the same Ninja preset is used on every OS
+      # (the Visual Studio multi-config generator cannot run tests as part
+      # of the build in the right order).
+      - name: Set up MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
         env:
           CC: ${{ matrix.cc }}
           CXX: ${{ matrix.cxx }}
         run: cmake --preset ci
 
-      # No generator preset here: CMake picks the Visual Studio version that
-      # the runner image actually provides.
-      - name: Configure (MSVC)
-        if: runner.os == 'Windows'
-        run: cmake -S . -B build/msvc -A x64 -DLMS_WARNINGS_AS_ERRORS=ON
-
       # Tests run as part of the build (target run_tests); a failing test
       # fails the build.
       - name: Build + tests
-        if: runner.os != 'Windows'
         run: cmake --build --preset ci
 
-      - name: Build + tests (MSVC)
-        if: runner.os == 'Windows'
-        run: cmake --build build/msvc --config Release
-
       - name: Test report
-        if: runner.os != 'Windows'
         run: ctest --preset ci
-
-      - name: Test report (MSVC)
-        if: runner.os == 'Windows'
-        run: ctest --test-dir build/msvc -C Release --output-on-failure
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
@@ -70,7 +59,7 @@ jobs:
           name: lms-${{ runner.os }}
           path: |
             build/ci/lms
-            build/msvc/Release/lms.exe
+            build/ci/lms.exe
           if-no-files-found: ignore
 
   format:
