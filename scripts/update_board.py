@@ -20,6 +20,7 @@ import csv
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -36,15 +37,30 @@ DEFAULT_OPEN = {
 
 def call(url, token, method="GET", data=None):
     body = json.dumps(data).encode() if data is not None else None
-    req = urllib.request.Request(url, data=body, method=method)
-    req.add_header("Authorization", f"Bearer {token}")
-    req.add_header("Accept", "application/vnd.github+json")
-    req.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(req) as resp:
-            return json.loads(resp.read() or b"null")
-    except urllib.error.HTTPError as e:
-        sys.exit(f"{method} {url} -> {e.code}: {e.read().decode()}")
+    # GitHub throttles bursts of mutations (secondary rate limit, HTTP 403/429)
+    # and occasionally returns 5xx; retry with growing pauses before giving up.
+    for attempt in range(6):
+        req = urllib.request.Request(url, data=body, method=method)
+        req.add_header("Authorization", f"Bearer {token}")
+        req.add_header("Accept", "application/vnd.github+json")
+        req.add_header("Content-Type", "application/json")
+        try:
+            with urllib.request.urlopen(req) as resp:
+                return json.loads(resp.read() or b"null")
+        except urllib.error.HTTPError as e:
+            text = e.read().decode()
+            if e.code in (403, 429, 500, 502, 503, 504) and attempt < 5:
+                wait = int(e.headers.get("Retry-After", 0) or 0) or 10 * (attempt + 1)
+                print(f"  {e.code} from GitHub, retrying in {wait}s ...")
+                time.sleep(wait)
+                continue
+            sys.exit(f"{method} {url} -> {e.code}: {text}")
+        except urllib.error.URLError as e:
+            if attempt < 5:
+                print(f"  network error ({e.reason}), retrying in 10s ...")
+                time.sleep(10)
+                continue
+            raise
 
 
 def graphql(query, token, **variables):
@@ -147,6 +163,7 @@ def main():
             call(f"{API}/repos/{c['repository']['nameWithOwner']}/issues/{c['number']}", token, "PATCH",
                  {"state": "closed", "state_reason": "completed"})
             done_count += 1
+        time.sleep(1.5)  # stay under the secondary rate limit
 
     print(f"updated {len([1 for i in items if (i.get('content') or {}).get('title','').startswith('T')])} items, "
           f"closed {done_count} issues{' (dry run)' if args.dry_run else ''}")
