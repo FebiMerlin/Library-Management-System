@@ -1,0 +1,13 @@
+log:
+  level: info
+runner:
+  capacity: 1
+  timeout: 1h
+  labels:
+    - "ubuntu-latest:docker://lms-builder:latest"
+cache:
+  enabled: true
+container:
+  network: ""
+  privileged: false
+  options: ""
